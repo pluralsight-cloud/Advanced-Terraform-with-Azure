@@ -1,0 +1,7 @@
+subnet_configuration = {
+  privatelink = "10.64.4.0/24"
+  ingress     = "10.64.5.0/24"
+  appgateway  = "10.64.6.0/24"
+  nodes       = "10.64.0.0/22"
+}
+vnet_address_space = ["10.64.0.0/16"]
