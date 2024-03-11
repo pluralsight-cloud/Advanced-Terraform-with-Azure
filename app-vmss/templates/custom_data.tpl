@@ -26,6 +26,7 @@ def hello_world():
 </head>
 <body>
     <h1>MOAR! MOAR!🚗🌮🌮🌮</h1>
+    <p>${api_key}</p>
 </body>
 </html>"""
 EOF

@@ -1,10 +1,10 @@
 variable "prefix" {
   description = "Naming prefix for resources. Should be 3-8 characters."
-  type = string
-  default = "tacoweb"
+  type        = string
+  default     = "tacoweb"
 
   validation {
-    condition = length(var.prefix) >= 3 && length(var.prefix) <=8
+    condition     = length(var.prefix) >= 3 && length(var.prefix) <= 8
     error_message = "Naming prefix should be between 3-8 characters. Submitted value was ${length(var.prefix)}."
   }
 }
@@ -18,11 +18,11 @@ variable "location" {
 
 variable "vmss_count" {
   description = "Starting number of VMSS instances to create. Defaults to 2."
-  type = number
-  default = 2
+  type        = number
+  default     = 2
 
   validation {
-    condition = var.vmss_count >= 1
+    condition     = var.vmss_count >= 1
     error_message = "Count must be 1 or greater. Submitted value was ${var.vmss_count}."
   }
 }
@@ -41,12 +41,16 @@ variable "vm_size" {
 
 variable "application_port" {
   description = "Port to use for the flask application. Defaults to 80."
-  type = number
-  default = 80
+  type        = number
+  default     = 80
 }
 
 variable "subnet_id" {
   description = "ID of subnet for network interface card of virtual machine."
   type        = string
+}
+
+variable "api_key" {
+  type = string
 }
 
