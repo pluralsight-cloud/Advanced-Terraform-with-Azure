@@ -28,4 +28,6 @@ resource "kubernetes_service_account_v1" "workload_identity" {
       "azure.workload.identity/client-id" = azurerm_user_assigned_identity.vault.client_id
     }
   }
+
+  depends_on = [ azurerm_role_assignment.admin ]
 }

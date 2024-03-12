@@ -22,8 +22,8 @@ resource "azurerm_kubernetes_flux_configuration" "podinfo" {
   }
 
   kustomizations {
-    name = "aspnetapp"
-    path = "./dotnet"
+    name                     = "aspnetapp"
+    path                     = "./dotnet"
     sync_interval_in_seconds = 60
   }
 
