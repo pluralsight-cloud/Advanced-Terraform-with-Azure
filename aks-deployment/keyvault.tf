@@ -16,7 +16,7 @@ module "avm-res-keyvault-vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
   version = "0.5.2"
 
-  name                = "${var.prefix}-aks"
+  name                = "${var.prefix}-aks-app"
   resource_group_name = azurerm_resource_group.aks.name
   location            = azurerm_resource_group.aks.location
   tenant_id           = data.azurerm_client_config.current.tenant_id
