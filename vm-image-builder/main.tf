@@ -153,14 +153,6 @@ resource "azapi_resource" "image_templates" {
             "sudo mkdir /buildArtifacts",
             "sudo cp /tmp/index.html /buildArtifacts/index.html"
           ]
-        },
-
-        {
-          type = "Shell"
-          name = "InstallUpgrades"
-          inline = [
-            "sudo apt install unattended-upgrades"
-          ]
         }
       ]
       distribute = [
