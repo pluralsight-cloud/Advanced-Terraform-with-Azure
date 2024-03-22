@@ -13,11 +13,6 @@ resource "azurerm_container_registry" "main" {
   location            = azurerm_resource_group.main.location
   sku                 = "Premium"
   admin_enabled       = false
-
-  #retention_policy {
-  #  days = 14
-  #  enabled = true
-  #}
 }
 
 
