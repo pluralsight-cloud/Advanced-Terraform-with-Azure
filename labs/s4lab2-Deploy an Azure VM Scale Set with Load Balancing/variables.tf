@@ -9,8 +9,7 @@ variable "vnet_name" {
 }
 
 variable "subnet_name" {
-  description = "Name of the subnet to use in the Virtual Network. Defaults to app."
+  description = "Name of the subnet to use in the Virtual Network. Defaults to web."
   type        = string
-  default     = "app"
+  default     = "web"
 }
-
