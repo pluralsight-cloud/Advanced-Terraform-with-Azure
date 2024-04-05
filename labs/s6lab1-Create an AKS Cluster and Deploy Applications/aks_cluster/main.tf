@@ -1,3 +1,26 @@
+# Create resource group for networking
+data "azurerm_resource_group" "main" {
+  name = var.resource_group_name
+}
+
+# Create virtual network with subnets
+module "aks_vnet" {
+  source  = "Azure/vnet/azurerm"
+  version = "4.1.0"
+
+  resource_group_name = data.azurerm_resource_group.main.name
+  vnet_location       = data.azurerm_resource_group.main.location
+  use_for_each        = true
+
+  vnet_name       = data.azurerm_resource_group.main.name
+  address_space   = var.vnet_address_space
+  subnet_names    = keys(var.subnet_configuration)
+  subnet_prefixes = values(var.subnet_configuration)
+
+  tags = var.common_tags
+
+}
+
 # Create an AKS cluster
 module "app" {
   source  = "Azure/aks/azurerm"
@@ -7,7 +30,6 @@ module "app" {
   resource_group_name             = data.azurerm_resource_group.main.name
   prefix                          = var.prefix
   cluster_name_random_suffix      = true
-  kubernetes_version              = var.kubernetes_version
   sku_tier                        = "Standard"
   node_os_channel_upgrade         = "NodeImage"
   automatic_channel_upgrade       = "node-image"

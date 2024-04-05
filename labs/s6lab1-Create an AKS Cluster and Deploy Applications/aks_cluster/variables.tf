@@ -26,9 +26,3 @@ variable "subnet_configuration" {
   description = "Map of subnets to create in the VNET. Key is subnet name, value is address spaces."
   type        = map(string)
 }
-
-variable "kubernetes_version" {
-  description = "Version of Kubernetes to use for the AKS cluster."
-  type        = string
-  default     = null
-}
