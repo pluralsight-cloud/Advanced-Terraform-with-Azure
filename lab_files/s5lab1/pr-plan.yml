@@ -1,0 +1,85 @@
+# PR pipeline
+variables: 
+- group: state-data
+- name: service-connection
+  value: 'tacowagon-dev'
+
+trigger:
+  branches:
+    exclude:
+      - main
+
+stages:
+- stage: validate
+  displayName: Validation
+  condition: eq(variables['Build.Reason'], 'PullRequest')
+  jobs:
+  - job: Validate
+    displayName: Validate Terraform
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: TerraformInstaller@0
+      displayName: Install Terraform
+      inputs:
+        terraformVersion: 'latest'
+    - pwsh: terraform fmt -check
+      displayName: Terraform Format Check
+    - pwsh: terraform init -backend=false
+      displayName: Terraform Init
+    - pwsh: terraform validate
+      displayName: Terraform Validate
+
+- stage: Plan
+  displayName: Plan
+  condition: eq(variables['Build.Reason'], 'PullRequest')
+  jobs:
+  - job: Plan
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: TerraformInstaller@0
+      displayName: Install Terraform
+      inputs:
+        terraformVersion: 'latest'
+    
+    - task: TerraformTaskV4@4
+      displayName: Terraform Init
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        backendServiceArm: $(service-connection)
+        backendAzureRmResourceGroupName: '$(BACKEND_RESOURCE_GROUP_NAME)'
+        backendAzureRmStorageAccountName: '$(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)'
+        backendAzureRmContainerName: '$(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)'
+        backendAzureRmKey: '$(BACKEND_AZURE_STORAGE_ACCOUNT_KEY_NAME)'
+      env:
+        ARM_USE_AZUREAD: true
+        TF_IN_AUTOMATION: true
+        TF_INPUT: 0
+        TF_LOG: INFO
+
+    - task: TerraformTaskV4@4
+      displayName: Terraform Plan
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        commandOptions: -out=$(System.DefaultWorkingDirectory)/deploy.tfplan
+        environmentServiceNameAzureRM: $(service-connection)
+      env:
+        ARM_USE_AZUREAD: true
+        ARM_CLIENT_ID: '$(BACKEND_CLIENT_ID)'
+        ARM_CLIENT_SECRET: '$(BACKEND_CLIENT_SECRET)'
+        ARM_SUBSCRIPTION_ID: '$(BACKEND_SUBSCRIPTION_ID)'
+        ARM_TENANT_ID: '$(BACKEND_TENANT_ID)'
+        TF_IN_AUTOMATION: true
+        TF_INPUT: 0
+        TF_LOG: INFO
+
+    # Push plan file to Azure Storage Account for Apply
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Plan File as an artifact
+      inputs:
+        targetPath: '$(System.DefaultWorkingDirectory)/deploy.tfplan'
+        artifactName: PlanFile
+        publishLocation: 'pipeline'
