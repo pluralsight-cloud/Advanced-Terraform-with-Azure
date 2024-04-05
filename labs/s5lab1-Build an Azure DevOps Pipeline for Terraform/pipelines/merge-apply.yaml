@@ -1,0 +1,57 @@
+# Merge pipeline
+variables: 
+- group: state-data
+- name: service-connection
+  value: 'tacowagon-app'
+
+trigger:
+  branches:
+    include:
+    - main
+
+stages:
+- stage: Apply
+  displayName: Apply
+  jobs:
+  - job: apply
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+        
+    # Download Plan file artifact
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        source: 'specific'
+        project: $(System.TeamProjectId)
+        pipeline: 'pr-plan'
+        artifactName: PlanFile
+
+    - task: TerraformInstaller@0
+      displayName: Install Terraform
+      inputs:
+        terraformVersion: 'latest'
+    
+    - task: TerraformTaskV4@4
+      displayName: Terraform Init
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        backendServiceArm: $(service-connection)
+        backendAzureRmResourceGroupName: '$(BACKEND_RESOURCE_GROUP_NAME)'
+        backendAzureRmStorageAccountName: '$(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)'
+        backendAzureRmContainerName: '$(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)'
+        backendAzureRmKey: '$(BACKEND_AZURE_STORAGE_ACCOUNT_KEY_NAME)'
+      env:
+        ARM_USE_AZUREAD: true
+        ARM_USE_OIDC: true
+
+    - task: TerraformTaskV4@4
+      displayName: Terraform Apply
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        commandOptions: '$(Pipeline.Workspace)/deploy.tfplan'
+        environmentServiceNameAzureRM: $(service-connection)
+      env:
+        ARM_USE_AZUREAD: true
+        ARM_USE_OIDC: true
