@@ -17,6 +17,7 @@ resource "azurerm_storage_account" "main" {
   blob_properties {
     last_access_time_enabled = true
   }
+  #local_user_enabled = false
 }
 
 resource "azapi_update_resource" "local_user" {
@@ -63,3 +64,20 @@ resource "azapi_resource" "cold_storage_policy" {
     }
   })
 }
+
+#resource "azurerm_storage_management_policy" "brrrr" {
+#  storage_account_id = azurerm_storage_account.main.id
+#  rule {
+#    name    = "default"
+#    enabled = true
+#    filters {
+#      blob_types = ["blockBlob"]
+#    }
+#    actions {
+#      base_blob {
+#        tier_to_cool_after_days_since_last_access_time_greater_than = 90
+#        tier_to_cold_after_days_since_last_access_time_greater_than = 365
+#      }
+#    }
+#  }
+#}
