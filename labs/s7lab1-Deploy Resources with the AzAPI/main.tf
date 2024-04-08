@@ -49,10 +49,10 @@ resource "azapi_resource" "cold_storage_policy" {
               }
               actions = {
                 baseBlob = {
-                  tierToCold = {
+                  tierToCool = {
                     daysAfterLastAccessTimeGreaterThan = 90
                   }
-                  tierToCool = {
+                  tierToCold = {
                     daysAfterLastAccessTimeGreaterThan = 365
                   }
                 }
