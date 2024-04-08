@@ -42,11 +42,13 @@ stages:
         backendAzureRmContainerName: '$(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)'
         backendAzureRmKey: '$(BACKEND_AZURE_STORAGE_ACCOUNT_KEY_NAME)'
       env:
-        ARM_USE_AZUREAD: true
         ARM_CLIENT_ID: '$(BACKEND_CLIENT_ID)'
         ARM_CLIENT_SECRET: '$(BACKEND_CLIENT_SECRET)'
         ARM_SUBSCRIPTION_ID: '$(BACKEND_SUBSCRIPTION_ID)'
         ARM_TENANT_ID: '$(BACKEND_TENANT_ID)'
+        TF_IN_AUTOMATION: true
+        TF_INPUT: 0
+        TF_LOG: INFO
 
     - task: TerraformTaskV4@4
       displayName: Terraform Apply
@@ -56,4 +58,10 @@ stages:
         commandOptions: '$(Pipeline.Workspace)/deploy.tfplan'
         environmentServiceNameAzureRM: $(service-connection)
       env:
-        ARM_USE_AZUREAD: true
+        ARM_CLIENT_ID: '$(BACKEND_CLIENT_ID)'
+        ARM_CLIENT_SECRET: '$(BACKEND_CLIENT_SECRET)'
+        ARM_SUBSCRIPTION_ID: '$(BACKEND_SUBSCRIPTION_ID)'
+        ARM_TENANT_ID: '$(BACKEND_TENANT_ID)'
+        TF_IN_AUTOMATION: true
+        TF_INPUT: 0
+        TF_LOG: INFO
