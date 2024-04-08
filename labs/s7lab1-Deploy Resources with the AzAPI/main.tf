@@ -1,80 +1,65 @@
-import {
-  id = "/subscriptions/7d647b65-93d0-4240-a0be-37dcbaca013d/resourceGroups/dev-taco-warehouse/providers/Microsoft.Storage/storageAccounts/testazapistorage"
-  to = azurerm_storage_account.main
+data "azurerm_resource_group" "main" {
+  name = var.resource_group_name
 }
 
-removed {
-  from = azapi_resource.storageAccount
-
-  lifecycle {
-    destroy = false
-  }
+resource "random_integer" "main" {
+  min = 10000
+  max = 99999
 }
 
 resource "azurerm_storage_account" "main" {
-  resource_group_name              = azurerm_resource_group.main.name
-  location                         = azurerm_resource_group.main.location
-  name                             = "testazapistorage"
-  account_kind                     = "StorageV2"
-  access_tier                      = "Hot"
-  account_replication_type         = "LRS"
-  account_tier                     = "Standard"
-  cross_tenant_replication_enabled = true
-  shared_access_key_enabled        = true
-
-  queue_encryption_key_type = "Service"
-  table_encryption_key_type = "Service"
-  is_hns_enabled            = false
-  sftp_enabled              = false
-  nfsv3_enabled             = false
-  min_tls_version           = "TLS1_2"
-  network_rules {
-    default_action = "Allow"
+  name                      = "tacowagon${random_integer.main.result}"
+  resource_group_name       = data.azurerm_resource_group.main.name
+  location                  = data.azurerm_resource_group.main.location
+  account_tier              = "Standard"
+  account_replication_type  = "LRS"
+  enable_https_traffic_only = true
+  blob_properties {
+    last_access_time_enabled = true
   }
-  public_network_access_enabled   = true
-  enable_https_traffic_only       = true
-  default_to_oauth_authentication = false
-
 }
 
-/*resource "azapi_resource" "storageAccount" {
-  type      = "Microsoft.Storage/storageAccounts@2021-09-01"
-  parent_id = azurerm_resource_group.main.id
-  name      = "testazapistorage"
-  location  = var.location
+resource "azapi_update_resource" "local_user" {
+  type        = "Microsoft.Storage/storageAccounts@2021-09-01"
+  resource_id = azurerm_storage_account.main.id
+
   body = jsonencode({
-    kind = "StorageV2"
     properties = {
-      accessTier                   = "Hot"
-      allowBlobPublicAccess        = true
-      allowCrossTenantReplication  = true
-      allowSharedKeyAccess         = true
-      defaultToOAuthAuthentication = false
-      encryption = {
-        keySource = "Microsoft.Storage"
-        services = {
-          queue = {
-            keyType = "Service"
-          }
-          table = {
-            keyType = "Service"
-          }
-        }
-      }
-      isHnsEnabled      = false
-      isNfsV3Enabled    = false
-      isSftpEnabled     = false
-      minimumTlsVersion = "TLS1_2"
-      networkAcls = {
-        defaultAction = "Allow"
-      }
-      publicNetworkAccess      = "Enabled"
-      supportsHttpsTrafficOnly = true
-    }
-    sku = {
-      name = "Standard_LRS"
+      isLocalUserEnabled = false
     }
   })
-  schema_validation_enabled = false
-  response_export_values    = ["*"]
-}*/
+}
+
+resource "azapi_resource" "cold_storage_policy" {
+  type      = "Microsoft.Storage/storageAccounts/managementPolicies@2023-01-01"
+  name      = "default"
+  parent_id = azurerm_storage_account.main.id
+
+  body = jsonencode({
+    properties = {
+      policy = {
+        rules = [
+          {
+            name    = "default"
+            enabled = true
+            type    = "Lifecycle"
+            definition = {
+              filters = {
+                blobTypes = ["blockBlob"]
+              }
+              actions = {
+                baseBlob = {
+                  tierToCold = {
+                    daysAfterLastAccessTimeGreaterThan = 90
+                  }
+                  tierToCool = {
+                    daysAfterLastAccessTimeGreaterThan = 365
+                  }
+                }
+              }
+            }
+          }
+      ] }
+    }
+  })
+}
