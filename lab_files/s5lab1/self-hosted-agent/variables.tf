@@ -3,8 +3,8 @@ variable "resource_group_name" {
   description = "Name of the resource group provided by the lab."
 }
 
-variable "azp_url" {
-  description = "URL of your Azure DevOps Organization in the form https://dev.azure.com/YOURORGNAME"
+variable "azp_org_name" {
+  description = "Name of your Azure DevOps Organization."
   type        = string
 }
 
@@ -14,7 +14,13 @@ variable "azp_token" {
 }
 
 variable "azp_pool" {
-  description = "Name of the agent pool you created in Azure DevOps."
+  description = "Name of the agent pool you created in Azure DevOps. If not set, a new pool named aci-agents will be created."
   type        = string
-  default     = "aci-agents"
+  default     = ""
+}
+
+variable "agent_image" {
+  description = "Docker image for the self-hosted agent."
+  type        = string
+  default     = "ned1313/azp-agent:1.2.0"
 }
